@@ -11,8 +11,37 @@ namespace TPL
     {
         static void Main(string[] args)
         {
-            SpinWait();
-            Console.ReadKey();
+            WaitApproach();
+           // Console.ReadKey();
+        }
+        private static void WaitApproach()
+        {
+            var cts = new CancellationTokenSource();
+            var token = cts.Token;
+            var t = new Task(() =>
+              {
+                  Console.WriteLine("It will take 5 seconds...");
+                  for (int i = 0; i < 5; i++)
+                  {
+                      token.ThrowIfCancellationRequested();
+                      Thread.Sleep(1000);
+                  }
+                  Console.WriteLine("I am Done with first task...");
+              },token);
+            t.Start();
+          var t2=  Task.Factory.StartNew(() =>
+            {
+                Thread.Sleep(3000);
+                Console.WriteLine("Done with task 2");
+            },token);
+
+            // Task.WaitAll(t, t2);
+            // Task.WaitAny(t, t2);
+            //  Task.WaitAll(new[] {t,t2 },4000,token);
+          
+              Task.WaitAny(new[] {t,t2 },4000,token);
+            Console.WriteLine($"Task1 status is {t.Status}");
+            Console.WriteLine($"Task2 status is {t2.Status}");
         }
         private static void SpinWait()
         {
